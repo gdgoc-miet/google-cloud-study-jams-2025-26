@@ -37,33 +37,39 @@ function updateTierProgress() {
     const total = completedParticipants.length;
 
     // Update tier progress
+    const t1Percent = Math.round((total/TIER_THRESHOLDS.tier1) * 100);
     tier1Progress.innerHTML = `
-        <div class="flex justify-between items-center">
-            <span>${total}/${TIER_THRESHOLDS.tier1} Students</span>
-            <span class="font-bold">${Math.round((total/TIER_THRESHOLDS.tier1) * 100)}%</span>
+        <div class="flex justify-between items-center mb-2">
+            <span class="font-semibold">${total}/${TIER_THRESHOLDS.tier1} Students</span>
+            <span class="font-bold">${t1Percent}%</span>
         </div>
-        <div class="w-full bg-white/30 rounded-full h-2 mt-2">
-            <div class="bg-white rounded-full h-2" style="width: ${Math.min(100, (total/TIER_THRESHOLDS.tier1) * 100)}%"></div>
+        <div class="w-full bg-gray-200 rounded-full h-3">
+            <div class="bg-[#EA4335] rounded-full h-3 transition-all duration-500" 
+                 style="width: ${Math.min(100, t1Percent)}%"></div>
         </div>
     `;
 
+    const t2Percent = Math.round((total/TIER_THRESHOLDS.tier2) * 100);
     tier2Progress.innerHTML = `
-        <div class="flex justify-between items-center">
-            <span>${total}/${TIER_THRESHOLDS.tier2} Students</span>
-            <span class="font-bold">${Math.round((total/TIER_THRESHOLDS.tier2) * 100)}%</span>
+        <div class="flex justify-between items-center mb-2">
+            <span class="font-semibold">${total}/${TIER_THRESHOLDS.tier2} Students</span>
+            <span class="font-bold">${t2Percent}%</span>
         </div>
-        <div class="w-full bg-white/30 rounded-full h-2 mt-2">
-            <div class="bg-white rounded-full h-2" style="width: ${Math.min(100, (total/TIER_THRESHOLDS.tier2) * 100)}%"></div>
+        <div class="w-full bg-gray-200 rounded-full h-3">
+            <div class="bg-[#34A853] rounded-full h-3 transition-all duration-500" 
+                 style="width: ${Math.min(100, t2Percent)}%"></div>
         </div>
     `;
 
+    const t3Percent = Math.round((total/TIER_THRESHOLDS.tier3) * 100);
     tier3Progress.innerHTML = `
-        <div class="flex justify-between items-center">
-            <span>${total}/${TIER_THRESHOLDS.tier3} Students</span>
-            <span class="font-bold">${Math.round((total/TIER_THRESHOLDS.tier3) * 100)}%</span>
+        <div class="flex justify-between items-center mb-2">
+            <span class="font-semibold">${total}/${TIER_THRESHOLDS.tier3} Students</span>
+            <span class="font-bold">${t3Percent}%</span>
         </div>
-        <div class="w-full bg-white/30 rounded-full h-2 mt-2">
-            <div class="bg-white rounded-full h-2" style="width: ${Math.min(100, (total/TIER_THRESHOLDS.tier3) * 100)}%"></div>
+        <div class="w-full bg-gray-200 rounded-full h-3">
+            <div class="bg-[#4285F4] rounded-full h-3 transition-all duration-500" 
+                 style="width: ${Math.min(100, t3Percent)}%"></div>
         </div>
     `;
 }
@@ -117,6 +123,7 @@ async function loadData() {
 
         renderLeaderboard();
         updateTierProgress();
+        updateFilterStats();
         loadingEl.style.display = 'none';
     } catch (error) {
         console.error('Error loading data:', error);
@@ -125,60 +132,93 @@ async function loadData() {
     }
 }
 
+function updateFilterStats() {
+    const totalParticipants = participants.length;
+    const notRedeemed = participants.filter(p => p.accessStatus !== 'Yes').length;
+    const inProgress = participants.filter(p => p.totalBadges > 0 && !p.allCompleted).length;
+    const completed = participants.filter(p => p.allCompleted).length;
+
+    document.getElementById('filterStats').innerHTML = `
+        <div class="flex flex-wrap gap-4 text-sm">
+            <span>Total Participants: <b>${totalParticipants}</b></span>
+            <span>Not Redeemed: <b class="text-red-600">${notRedeemed}</b></span>
+            <span>In Progress: <b class="text-[#4285F4]">${inProgress}</b></span>
+            <span>Completed: <b class="text-green-600">${completed}</b></span>
+        </div>
+    `;
+}
+
 function renderLeaderboard(filteredParticipants = participants) {
+    updateFilterStats();
+    
     leaderboardEl.innerHTML = filteredParticipants
         .map((participant, index) => `
-            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <div class="flex flex-wrap items-start justify-between gap-4">
-                    <div class="flex items-center gap-4">
-                        <span class="text-2xl font-bold text-gray-500">#${index + 1}</span>
-                        <h2 class="text-xl font-semibold text-gray-900">${participant.name}</h2>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm text-gray-600">Access Code:</span>
-                        <span class="font-medium ${participant.accessStatus === 'Yes' ? 'text-green-600' : 'text-red-600'}">
-                            ${participant.accessStatus === 'Yes' ? 'Redeemed ✅' : 'Not Redeemed ❌'}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="mt-4 grid sm:grid-cols-2 gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="text-gray-600">Skill Badges:</span>
-                            <span class="font-semibold">${participant.totalBadges}</span>
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow mb-4">
+                <div class="flex items-start gap-4">
+                    <div class="flex-1">
+                    <!-- Content moved to start -->
+                        <div class="flex flex-wrap items-start justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <span class="text-2xl font-bold ${index < 3 ? 'text-[#FBBC04]' : 'text-gray-500'}">#${index + 1}</span>
+                                <h2 class="text-xl font-semibold ${participant.accessStatus === 'Yes' ? 'text-gray-900' : 'text-[#EA4335]'}">${participant.name}</h2>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm text-gray-600">Access Code:</span>
+                                <span class="font-medium ${participant.accessStatus === 'Yes' ? 'text-[#34A853]' : 'text-[#EA4335]'}">
+                                    ${participant.accessStatus === 'Yes' ? 'Redeemed ✅' : 'Not Redeemed ❌'}
+                                </span>
+                            </div>
                         </div>
-                        ${participant.badgeNames.length > 0 ? `
-                            <details class="cursor-pointer">
-                                <summary class="text-blue-600 hover:text-blue-700">View Skill Badge List ▼</summary>
-                                <ul class="mt-2 ml-4 text-sm text-gray-600 list-disc">
-                                    ${participant.badgeNames.map(badge => `<li>${badge}</li>`).join('')}
-                                </ul>
-                            </details>
-                        ` : ''}
-                    </div>
 
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="text-gray-600">Arcade Games:</span>
-                            <span class="font-semibold">${participant.arcadeCount}</span>
+                        <div class="mt-4 grid sm:grid-cols-2 gap-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-gray-600">Skill Badges:</span>
+                                    <span class="font-semibold text-[#4285F4]">${participant.totalBadges}</span>
+                                </div>
+                                ${participant.badgeNames.length > 0 ? `
+                                    <details class="cursor-pointer">
+                                        <summary class="text-[#4285F4] hover:text-blue-700">View Skill Badge List ▼</summary>
+                                        <ul class="mt-2 ml-4 text-sm text-gray-600 list-disc">
+                                            ${participant.badgeNames.map(badge => `<li>${badge}</li>`).join('')}
+                                        </ul>
+                                    </details>
+                                ` : ''}
+                            </div>
+
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-gray-600">Arcade Games:</span>
+                                    <span class="font-semibold text-[#FBBC04]">${participant.arcadeCount}</span>
+                                </div>
+                                ${participant.arcadeNames.length > 0 ? `
+                                    <details class="cursor-pointer">
+                                        <summary class="text-[#4285F4] hover:text-blue-700">View Arcade Game List ▼</summary>
+                                        <ul class="mt-2 ml-4 text-sm text-gray-600 list-disc">
+                                            ${participant.arcadeNames.map(game => `<li>${game}</li>`).join('')}
+                                        </ul>
+                                    </details>
+                                ` : ''}
+                            </div>
                         </div>
-                        ${participant.arcadeNames.length > 0 ? `
-                            <details class="cursor-pointer">
-                                <summary class="text-blue-600 hover:text-blue-700">View Arcade Game List ▼</summary>
-                                <ul class="mt-2 ml-4 text-sm text-gray-600 list-disc">
-                                    ${participant.arcadeNames.map(game => `<li>${game}</li>`).join('')}
-                                </ul>
-                            </details>
-                        ` : ''}
-                    </div>
-                </div>
 
-                <div class="mt-4 text-sm">
-                    <span class="text-gray-600">All Skill Badges & Games Completed:</span>
-                    <span class="ml-2 font-medium ${participant.allCompleted ? 'text-green-600' : 'text-yellow-600'}">
-                        ${participant.allCompleted ? 'Yes ✅' : 'No ⏳'}
-                    </span>
+                        <div class="mt-4 text-sm">
+                            <span class="text-gray-600">All Skill Badges & Games Completed:</span>
+                            <span class="ml-2 font-medium ${participant.allCompleted ? 'text-[#34A853]' : 'text-[#FBBC04]'}">
+                                ${participant.allCompleted ? 'Yes ✅' : 'No ⏳'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Right: Progress Bar -->
+                    <div class="flex-shrink-0">
+                        <div class="w-2 h-24 bg-gray-100 rounded-full relative">
+                            <div class="absolute bottom-0 left-0 right-0 bg-[#34A853] rounded-full transition-all" 
+                                 style="height: ${((participant.totalBadges + participant.arcadeCount) / 20) * 100}%;"
+                                 title="${participant.totalBadges + participant.arcadeCount}/20 items completed">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `)
@@ -203,6 +243,9 @@ function handleFilters() {
             break;
         case 'notStarted':
             filtered = filtered.filter(p => p.totalBadges === 0);
+            break;
+        case 'notRedeemed':
+            filtered = filtered.filter(p => p.accessStatus !== 'Yes');
             break;
     }
     

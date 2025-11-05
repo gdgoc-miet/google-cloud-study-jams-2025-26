@@ -4,57 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Cloud Study Jams Leaderboard – MIET Jammu</title>
+    <!-- Google Sans Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                fontFamily: {
+                    'google-sans': ['"Open Sans"', 'sans-serif'],
+                },
+            },
+        }
+    </script>
     <!-- PapaParse for CSV parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+        .tier-swag-list {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
         <!-- Tier Status Bar -->
-    <div class="bg-white shadow-md mb-6">
+    <div class="bg-white shadow-sm mb-6">
         <div class="container mx-auto px-4 py-3">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="tier-card bg-gradient-to-r from-[#EA4335] to-[#FBBC04] p-4 rounded-lg text-white">
-                    <h3 class="font-bold mb-2">Tier 1 Status</h3>
-                    <div id="tier1-progress" class="text-sm">Loading...</div>
-                    <details class="mt-2 cursor-pointer">
-                        <summary class="font-medium">View Swag ▼</summary>
-                        <div class="mt-2 text-sm bg-white/10 p-2 rounded">
-                            All Tier 2 rewards plus:
-                            <ul class="list-disc ml-4 mt-1">
-                                <li>Limited Edition Bag</li>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="tier-card bg-white border-2 border-[#EA4335] p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4 text-[#EA4335]">Tier 1 Status</h3>
+                    <div id="tier1-progress" class="mb-4">Loading...</div>
+                    <details class="cursor-pointer">
+                        <summary class="font-semibold text-[#EA4335] text-lg">View Swag ▼</summary>
+                        <div class="mt-4 p-4 rounded-lg bg-gray-50">
+                            <ul class="tier-swag-list space-y-3 text-gray-800">
+                                <li class="flex items-center gap-2">
+                                    <span class="text-[#EA4335]">●</span> Limited Edition Google Cloud Sticker Pack
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <span class="text-[#34A853]">●</span> Exclusive Google Cloud T-Shirt
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <span class="text-[#4285F4]">●</span> Premium Google Cloud Water Bottle
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <span class="text-[#FBBC04]">●</span> Special Edition Google Cloud Bag
+                                </li>
                             </ul>
                         </div>
                     </details>
                 </div>
-                <div class="tier-card bg-gradient-to-r from-[#34A853] to-[#4285F4] p-4 rounded-lg text-white">
-                    <h3 class="font-bold mb-2">Tier 2 Status</h3>
-                    <div id="tier2-progress" class="text-sm">Loading...</div>
-                    <details class="mt-2 cursor-pointer">
-                        <summary class="font-medium">View Swag ▼</summary>
-                        <div class="mt-2 text-sm bg-white/10 p-2 rounded">
-                            All Tier 3 rewards plus:
-                            <ul class="list-disc ml-4 mt-1">
-                                <li>Google Cloud Water Bottle</li>
+                <div class="tier-card bg-white border-2 border-[#34A853] p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4 text-[#34A853]">Tier 2 Status</h3>
+                    <div id="tier2-progress" class="mb-4">Loading...</div>
+                    <details class="cursor-pointer">
+                        <summary class="font-semibold text-[#34A853] text-lg">View Swag ▼</summary>
+                        <div class="mt-4 p-4 rounded-lg bg-gray-50">
+                            <ul class="tier-swag-list space-y-3 text-gray-800">
+                                <li class="flex items-center gap-2">
+                                    <span class="text-[#EA4335]">●</span> Limited Edition Google Cloud Sticker Pack
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <span class="text-[#34A853]">●</span> Exclusive Google Cloud T-Shirt
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <span class="text-[#4285F4]">●</span> Premium Google Cloud Water Bottle
+                                </li>
                             </ul>
                         </div>
                     </details>
                 </div>
-                <div class="tier-card bg-gradient-to-r from-[#4285F4] to-[#34A853] p-4 rounded-lg text-white">
-                    <h3 class="font-bold mb-2">Tier 3 Status</h3>
-                    <div id="tier3-progress" class="text-sm">Loading...</div>
-                    <details class="mt-2 cursor-pointer">
-                        <summary class="font-medium">View Swag ▼</summary>
-                        <div class="mt-2 text-sm bg-white/10 p-2 rounded">
-                            <ul class="list-disc ml-4">
-                                <li>Google Cloud T-Shirt</li>
-                                <li>Exclusive Sticker Pack</li>
+                <div class="tier-card bg-white border-2 border-[#4285F4] p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4 text-[#4285F4]">Tier 3 Status</h3>
+                    <div id="tier3-progress" class="mb-4">Loading...</div>
+                    <details class="cursor-pointer">
+                        <summary class="font-semibold text-[#4285F4] text-lg">View Swag ▼</summary>
+                        <div class="mt-4 p-4 rounded-lg bg-gray-50">
+                            <ul class="tier-swag-list space-y-3 text-gray-800">
+                                <li class="flex items-center gap-2">
+                                    <span class="text-[#EA4335]">●</span> Limited Edition Google Cloud Sticker Pack
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <span class="text-[#34A853]">●</span> Exclusive Google Cloud T-Shirt
+                                </li>
                             </ul>
                         </div>
                     </details>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Filter Stats -->
+    <div id="filterStats" class="container mx-auto px-4 mb-4 text-gray-600">
+        Loading statistics...
     </div>
 
     <div class="container mx-auto px-4 py-8">
@@ -74,6 +120,7 @@
                         <option value="completed">Completed All</option>
                         <option value="inProgress">In Progress</option>
                         <option value="notStarted">Not Started</option>
+                        <option value="notRedeemed">Not Redeemed</option>
                     </select>
                     <div class="relative w-full sm:w-96">
                         <input type="text" id="searchInput" 
