@@ -247,6 +247,9 @@ function handleFilters() {
         case 'notRedeemed':
             filtered = filtered.filter(p => p.accessStatus !== 'Yes');
             break;
+        case 'redeemedNotStarted':
+            filtered = filtered.filter(p => p.accessStatus === 'Yes' && p.totalBadges === 0 && p.arcadeCount === 0);
+            break;
     }
     
     renderLeaderboard(filtered);
