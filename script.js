@@ -153,8 +153,8 @@ function renderLeaderboard(filteredParticipants = participants) {
     
     leaderboardEl.innerHTML = filteredParticipants
         .map((participant, index) => `
-            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow mb-4">
-                <div class="flex items-start gap-4">
+            <div class="bg-white rounded-lg shadow-md px-6 py-4 hover:shadow-lg transition-shadow mb-3">
+                <div class="flex items-stretch gap-4">
                     <div class="flex-1">
                     <!-- Content moved to start -->
                         <div class="flex flex-wrap items-start justify-between gap-4">
@@ -211,9 +211,9 @@ function renderLeaderboard(filteredParticipants = participants) {
                     </div>
 
                     <!-- Right: Progress Bar -->
-                    <div class="flex-shrink-0">
-                        <div class="w-2 h-24 bg-gray-100 rounded-full relative">
-                            <div class="absolute bottom-0 left-0 right-0 bg-[#34A853] rounded-full transition-all" 
+                    <div class="flex-shrink-0 self-stretch flex items-stretch">
+                        <div class="w-4 border-2 border-[#EA4333] bg-gray-100 rounded-full relative my-1">
+                            <div class="absolute bottom-0 left-0 right-0 bg-[#33AB52] rounded-full transition-all" 
                                  style="height: ${((participant.totalBadges + participant.arcadeCount) / 20) * 100}%;"
                                  title="${participant.totalBadges + participant.arcadeCount}/20 items completed">
                             </div>
