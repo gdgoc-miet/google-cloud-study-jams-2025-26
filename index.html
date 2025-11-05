@@ -10,25 +10,80 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
+        <!-- Tier Status Bar -->
+    <div class="bg-white shadow-md mb-6">
+        <div class="container mx-auto px-4 py-3">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="tier-card bg-gradient-to-r from-[#EA4335] to-[#FBBC04] p-4 rounded-lg text-white">
+                    <h3 class="font-bold mb-2">Tier 1 Status</h3>
+                    <div id="tier1-progress" class="text-sm">Loading...</div>
+                    <details class="mt-2 cursor-pointer">
+                        <summary class="font-medium">View Swag ▼</summary>
+                        <div class="mt-2 text-sm bg-white/10 p-2 rounded">
+                            All Tier 2 rewards plus:
+                            <ul class="list-disc ml-4 mt-1">
+                                <li>Limited Edition Bag</li>
+                            </ul>
+                        </div>
+                    </details>
+                </div>
+                <div class="tier-card bg-gradient-to-r from-[#34A853] to-[#4285F4] p-4 rounded-lg text-white">
+                    <h3 class="font-bold mb-2">Tier 2 Status</h3>
+                    <div id="tier2-progress" class="text-sm">Loading...</div>
+                    <details class="mt-2 cursor-pointer">
+                        <summary class="font-medium">View Swag ▼</summary>
+                        <div class="mt-2 text-sm bg-white/10 p-2 rounded">
+                            All Tier 3 rewards plus:
+                            <ul class="list-disc ml-4 mt-1">
+                                <li>Google Cloud Water Bottle</li>
+                            </ul>
+                        </div>
+                    </details>
+                </div>
+                <div class="tier-card bg-gradient-to-r from-[#4285F4] to-[#34A853] p-4 rounded-lg text-white">
+                    <h3 class="font-bold mb-2">Tier 3 Status</h3>
+                    <div id="tier3-progress" class="text-sm">Loading...</div>
+                    <details class="mt-2 cursor-pointer">
+                        <summary class="font-medium">View Swag ▼</summary>
+                        <div class="mt-2 text-sm bg-white/10 p-2 rounded">
+                            <ul class="list-disc ml-4">
+                                <li>Google Cloud T-Shirt</li>
+                                <li>Exclusive Sticker Pack</li>
+                            </ul>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container mx-auto px-4 py-8">
         <!-- Header Section -->
         <header class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">
+            <h1 class="text-3xl font-bold text-[#4285F4] mb-6 text-center">
                 Google Cloud Study Jams Leaderboard – MIET Jammu
             </h1>
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                <a href="https://cloud-skills-jams.vercel.app" target="_blank" rel="noopener"
-                   class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">
+                <a href="https://gcp-tutorial.vercel.app/" target="_blank" rel="noopener"
+                   class="bg-[#4285F4] hover:bg-[#357ABD] text-white font-semibold py-2 px-6 rounded-lg transition-colors">
                     View Coursework Solutions
                 </a>
-                <div class="relative w-full sm:w-96">
-                    <input type="text" id="searchInput" 
-                           placeholder="Search participants..." 
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <span class="absolute right-3 top-2.5 text-gray-400">🔍</span>
+                <div class="flex gap-4">
+                    <select id="filterType" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4285F4] focus:border-transparent">
+                        <option value="all">All Participants</option>
+                        <option value="completed">Completed All</option>
+                        <option value="inProgress">In Progress</option>
+                        <option value="notStarted">Not Started</option>
+                    </select>
+                    <div class="relative w-full sm:w-96">
+                        <input type="text" id="searchInput" 
+                               placeholder="Search participants..." 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4285F4] focus:border-transparent">
+                        <span class="absolute right-3 top-2.5 text-gray-400">🔍</span>
+                    </div>
                 </div>
             </div>
-            <div id="lastUpdated" class="text-sm text-gray-600 text-center"></div>
+            <div id="lastUpdated" class="text-sm text-[#4285F4] text-center"></div>
         </header>
 
         <!-- Leaderboard Section -->

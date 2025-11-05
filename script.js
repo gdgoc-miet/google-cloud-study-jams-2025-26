@@ -1,6 +1,11 @@
 // Constants
 const CSV_PATH = 'data.csv';
 const POLL_INTERVAL = 60000; // Check for updates every minute
+const TIER_THRESHOLDS = {
+    tier1: 100, // 100 students needed
+    tier2: 70,  // 70 students needed
+    tier3: 50   // 50 students needed
+};
 
 // State
 let participants = [];
@@ -9,17 +14,58 @@ let lastModified = null;
 // DOM Elements
 const leaderboardEl = document.getElementById('leaderboard');
 const searchInput = document.getElementById('searchInput');
+const filterType = document.getElementById('filterType');
 const loadingEl = document.getElementById('loading');
 const lastUpdatedEl = document.getElementById('lastUpdated');
+const tier1Progress = document.getElementById('tier1-progress');
+const tier2Progress = document.getElementById('tier2-progress');
+const tier3Progress = document.getElementById('tier3-progress');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
     await loadData();
-    searchInput.addEventListener('input', handleSearch);
+    searchInput.addEventListener('input', handleFilters);
+    filterType.addEventListener('change', handleFilters);
     // Start polling for updates
     setInterval(checkForUpdates, POLL_INTERVAL);
+}
+
+function updateTierProgress() {
+    const completedParticipants = participants.filter(p => p.allCompleted);
+    const total = completedParticipants.length;
+
+    // Update tier progress
+    tier1Progress.innerHTML = `
+        <div class="flex justify-between items-center">
+            <span>${total}/${TIER_THRESHOLDS.tier1} Students</span>
+            <span class="font-bold">${Math.round((total/TIER_THRESHOLDS.tier1) * 100)}%</span>
+        </div>
+        <div class="w-full bg-white/30 rounded-full h-2 mt-2">
+            <div class="bg-white rounded-full h-2" style="width: ${Math.min(100, (total/TIER_THRESHOLDS.tier1) * 100)}%"></div>
+        </div>
+    `;
+
+    tier2Progress.innerHTML = `
+        <div class="flex justify-between items-center">
+            <span>${total}/${TIER_THRESHOLDS.tier2} Students</span>
+            <span class="font-bold">${Math.round((total/TIER_THRESHOLDS.tier2) * 100)}%</span>
+        </div>
+        <div class="w-full bg-white/30 rounded-full h-2 mt-2">
+            <div class="bg-white rounded-full h-2" style="width: ${Math.min(100, (total/TIER_THRESHOLDS.tier2) * 100)}%"></div>
+        </div>
+    `;
+
+    tier3Progress.innerHTML = `
+        <div class="flex justify-between items-center">
+            <span>${total}/${TIER_THRESHOLDS.tier3} Students</span>
+            <span class="font-bold">${Math.round((total/TIER_THRESHOLDS.tier3) * 100)}%</span>
+        </div>
+        <div class="w-full bg-white/30 rounded-full h-2 mt-2">
+            <div class="bg-white rounded-full h-2" style="width: ${Math.min(100, (total/TIER_THRESHOLDS.tier3) * 100)}%"></div>
+        </div>
+    `;
 }
 
 async function loadData() {
@@ -70,6 +116,7 @@ async function loadData() {
         });
 
         renderLeaderboard();
+        updateTierProgress();
         loadingEl.style.display = 'none';
     } catch (error) {
         console.error('Error loading data:', error);
@@ -138,11 +185,27 @@ function renderLeaderboard(filteredParticipants = participants) {
         .join('');
 }
 
-function handleSearch(event) {
-    const searchTerm = event.target.value.toLowerCase();
-    const filtered = participants.filter(p => 
+function handleFilters() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const filterValue = filterType.value;
+    
+    let filtered = participants.filter(p => 
         p.name.toLowerCase().includes(searchTerm)
     );
+    
+    // Apply status filter
+    switch(filterValue) {
+        case 'completed':
+            filtered = filtered.filter(p => p.allCompleted);
+            break;
+        case 'inProgress':
+            filtered = filtered.filter(p => p.totalBadges > 0 && !p.allCompleted);
+            break;
+        case 'notStarted':
+            filtered = filtered.filter(p => p.totalBadges === 0);
+            break;
+    }
+    
     renderLeaderboard(filtered);
 }
 
