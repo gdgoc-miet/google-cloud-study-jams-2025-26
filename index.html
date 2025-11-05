@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Cloud Study Jams Leaderboard – MIET Jammu</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header Section -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">
+                Google Cloud Study Jams Leaderboard – MIET Jammu
+            </h1>
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                <a href="https://cloud-skills-jams.vercel.app" target="_blank" rel="noopener"
+                   class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">
+                    View Coursework Solutions
+                </a>
+                <div class="relative w-full sm:w-96">
+                    <input type="text" id="searchInput" 
+                           placeholder="Search participants..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <span class="absolute right-3 top-2.5 text-gray-400">🔍</span>
+                </div>
+            </div>
+            <div id="lastUpdated" class="text-sm text-gray-600 text-center"></div>
+        </header>
+
+        <!-- Leaderboard Section -->
+        <div id="leaderboard" class="space-y-4">
+            <!-- Participants will be dynamically inserted here -->
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <p class="mt-2 text-gray-600">Loading leaderboard...</p>
+        </div>
+    </div>
+
+    <!-- Custom Script -->
+    <script src="script.js"></script>
+</body>
+</html>
