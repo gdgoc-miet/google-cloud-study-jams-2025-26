@@ -33,8 +33,12 @@ async function init() {
 }
 
 function updateTierProgress() {
+    // Count participants who are marked as fully complete
     const completedParticipants = participants.filter(p => p.allCompleted);
     const total = completedParticipants.length;
+    
+    // Log tier progress calculation
+    console.log(`Total completed participants: ${total}`);
 
     // Update tier progress
     const t1Percent = Math.round((total/TIER_THRESHOLDS.tier1) * 100);
@@ -101,16 +105,27 @@ async function loadData() {
         
         // Transform data
         participants = results.data
-            .map((row, index) => ({
-                originalIndex: index,
-                name: row['User Name'],
-                accessStatus: row['Access Code Redemption Status'],
-                totalBadges: parseInt(row['# of Skill Badges Completed']) || 0,
-                badgeNames: row['Names of Completed Skill Badges'].split('|').filter(Boolean),
-                allCompleted: row['All Skill Badges & Games Completed'] === 'Yes',
-                arcadeCount: parseInt(row['# of Arcade Games Completed']) || 0,
-                arcadeNames: row['Names of Completed Arcade Games'].split('|').filter(Boolean)
-            }))
+            .map((row, index) => {
+                const totalBadges = parseInt(row['# of Skill Badges Completed']) || 0;
+                const arcadeCount = parseInt(row['# of Arcade Games Completed']) || 0;
+                const isFullyComplete = row['All Skill Badges & Games Completed'] === 'Yes';
+                
+                // Log completion details for debugging
+                if (isFullyComplete) {
+                    console.log(`Complete participant: ${row['User Name']}, Badges: ${totalBadges}, Arcade: ${arcadeCount}`);
+                }
+                
+                return {
+                    originalIndex: index,
+                    name: row['User Name'],
+                    accessStatus: row['Access Code Redemption Status'],
+                    totalBadges: totalBadges,
+                    badgeNames: row['Names of Completed Skill Badges'].split('|').filter(Boolean),
+                    arcadeCount: arcadeCount,
+                    arcadeNames: row['Names of Completed Arcade Games'].split('|').filter(Boolean),
+                    allCompleted: isFullyComplete // Use the CSV's completion status
+                };
+            })
             .filter(p => p.name); // Remove empty rows
 
         // Sort by total badges (descending) and preserve order for ties
@@ -135,8 +150,12 @@ async function loadData() {
 function updateFilterStats() {
     const totalParticipants = participants.length;
     const notRedeemed = participants.filter(p => p.accessStatus !== 'Yes').length;
-    const inProgress = participants.filter(p => p.totalBadges > 0 && !p.allCompleted).length;
     const completed = participants.filter(p => p.allCompleted).length;
+    // In progress means they have started but not completed everything
+    const inProgress = participants.filter(p => 
+        (p.totalBadges > 0 || p.arcadeCount > 0) && 
+        !p.allCompleted
+    ).length;
 
     document.getElementById('filterStats').innerHTML = `
         <div class="flex flex-wrap gap-4 text-sm">
@@ -174,7 +193,7 @@ function renderLeaderboard(filteredParticipants = participants) {
                             <div>
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="text-gray-600">Skill Badges:</span>
-                                    <span class="font-semibold text-[#4285F4]">${participant.totalBadges}</span>
+                                    <span class="font-semibold text-[#4285F4]">${participant.totalBadges}/19</span>
                                 </div>
                                 ${participant.badgeNames.length > 0 ? `
                                     <details class="cursor-pointer">
@@ -189,7 +208,7 @@ function renderLeaderboard(filteredParticipants = participants) {
                             <div>
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="text-gray-600">Arcade Games:</span>
-                                    <span class="font-semibold text-[#FBBC04]">${participant.arcadeCount}</span>
+                                    <span class="font-semibold text-[#FBBC04]">${participant.arcadeCount}/1</span>
                                 </div>
                                 ${participant.arcadeNames.length > 0 ? `
                                     <details class="cursor-pointer">
@@ -203,9 +222,13 @@ function renderLeaderboard(filteredParticipants = participants) {
                         </div>
 
                         <div class="mt-4 text-sm">
-                            <span class="text-gray-600">All Skill Badges & Games Completed:</span>
-                            <span class="ml-2 font-medium ${participant.allCompleted ? 'text-[#34A853]' : 'text-[#FBBC04]'}">
-                                ${participant.allCompleted ? 'Yes ✅' : 'No ⏳'}
+                            <span class="text-gray-600">Completion Status:</span>
+                            <span class="ml-2 font-medium ${participant.allCompleted ? 'text-[#34A853]' : 'text-[#FBBC04]'}" 
+                                  title="Required: 19 Skill Badges and 1 Arcade Game">
+                                ${participant.allCompleted ? 
+                                    'Completed ✅' : 
+                                    `In Progress ⌛ (${participant.totalBadges + participant.arcadeCount}/20)`
+                                }
                             </span>
                         </div>
                     </div>
@@ -239,10 +262,10 @@ function handleFilters() {
             filtered = filtered.filter(p => p.allCompleted);
             break;
         case 'inProgress':
-            filtered = filtered.filter(p => p.totalBadges > 0 && !p.allCompleted);
+            filtered = filtered.filter(p => (p.totalBadges > 0 || p.arcadeCount > 0) && !p.allCompleted);
             break;
         case 'notStarted':
-            filtered = filtered.filter(p => p.totalBadges === 0);
+            filtered = filtered.filter(p => p.totalBadges === 0 && p.arcadeCount === 0);
             break;
         case 'notRedeemed':
             filtered = filtered.filter(p => p.accessStatus !== 'Yes');
