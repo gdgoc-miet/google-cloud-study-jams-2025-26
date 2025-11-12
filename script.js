@@ -108,32 +108,47 @@ async function loadData() {
             .map((row, index) => {
                 const totalBadges = parseInt(row['# of Skill Badges Completed']) || 0;
                 const arcadeCount = parseInt(row['# of Arcade Games Completed']) || 0;
-                const isFullyComplete = row['All Skill Badges & Games Completed'] === 'Yes';
+                const userName = (row['User Name'] || '').trim();
+                const accessStatus = (row['Access Code Redemption Status'] || '').trim();
+                const csvCompletionStatus = (row['All Skill Badges & Games Completed'] || '').trim().toLowerCase() === 'yes';
+                const actuallyComplete = totalBadges === 19 && arcadeCount === 1;
+                
+                // Validate completion status consistency
+                if (csvCompletionStatus !== actuallyComplete && userName) {
+                    console.warn(`⚠️ Completion mismatch for ${userName}: CSV says ${csvCompletionStatus ? 'Yes' : 'No'}, but has ${totalBadges} badges + ${arcadeCount} arcade (expected 19+1)`);
+                }
                 
                 // Log completion details for debugging
-                if (isFullyComplete) {
-                    console.log(`Complete participant: ${row['User Name']}, Badges: ${totalBadges}, Arcade: ${arcadeCount}`);
+                if (csvCompletionStatus) {
+                    console.log(`Complete participant: ${userName}, Badges: ${totalBadges}, Arcade: ${arcadeCount}`);
                 }
                 
                 return {
                     originalIndex: index,
-                    name: row['User Name'],
-                    accessStatus: row['Access Code Redemption Status'],
+                    name: userName,
+                    accessStatus: accessStatus,
                     totalBadges: totalBadges,
-                    badgeNames: row['Names of Completed Skill Badges'].split('|').filter(Boolean),
+                    badgeNames: (row['Names of Completed Skill Badges'] || '').split('|').filter(Boolean),
                     arcadeCount: arcadeCount,
-                    arcadeNames: row['Names of Completed Arcade Games'].split('|').filter(Boolean),
-                    allCompleted: isFullyComplete // Use the CSV's completion status
+                    arcadeNames: (row['Names of Completed Arcade Games'] || '').split('|').filter(Boolean),
+                    allCompleted: csvCompletionStatus // Use the CSV's completion status
                 };
             })
             .filter(p => p.name); // Remove empty rows
 
-        // Sort by total badges (descending) and preserve order for ties
+        // Sort by total progress (badges + arcade), then by original order for ties
         participants.sort((a, b) => {
-            if (b.totalBadges === a.totalBadges) {
+            const aTotal = a.totalBadges + a.arcadeCount;
+            const bTotal = b.totalBadges + b.arcadeCount;
+            if (bTotal === aTotal) {
                 return a.originalIndex - b.originalIndex;
             }
-            return b.totalBadges - a.totalBadges;
+            return bTotal - aTotal;
+        });
+
+        // Assign ranks based on sorted order
+        participants.forEach((p, index) => {
+            p.rank = index + 1;
         });
 
         renderLeaderboard();
@@ -149,7 +164,7 @@ async function loadData() {
 
 function updateFilterStats() {
     const totalParticipants = participants.length;
-    const notRedeemed = participants.filter(p => p.accessStatus !== 'Yes').length;
+    const notRedeemed = participants.filter(p => p.accessStatus.toLowerCase() !== 'yes').length;
     const completed = participants.filter(p => p.allCompleted).length;
     // In progress means they have started but not completed everything
     const inProgress = participants.filter(p => 
@@ -170,21 +185,35 @@ function updateFilterStats() {
 function renderLeaderboard(filteredParticipants = participants) {
     updateFilterStats();
     
+    // Show filtered count if filtering is active
+    const isFiltered = filteredParticipants.length < participants.length;
+    if (isFiltered) {
+        const filterCountEl = document.getElementById('filterStats');
+        const currentStats = filterCountEl.innerHTML;
+        filterCountEl.innerHTML = `
+            <div class="flex flex-wrap gap-4 text-sm items-center">
+                <span class="text-[#4285F4] font-semibold">Showing ${filteredParticipants.length} of ${participants.length} participants</span>
+                <span class="text-gray-400">|</span>
+                ${currentStats.replace('<div class="flex flex-wrap gap-4 text-sm">', '').replace('</div>', '')}
+            </div>
+        `;
+    }
+    
     leaderboardEl.innerHTML = filteredParticipants
-        .map((participant, index) => `
+        .map((participant) => `
             <div class="bg-white rounded-lg shadow-md px-6 py-4 hover:shadow-lg transition-shadow mb-3">
                 <div class="flex items-stretch gap-4">
                     <div class="flex-1">
                     <!-- Content moved to start -->
                         <div class="flex flex-wrap items-start justify-between gap-4">
                             <div class="flex items-center gap-4">
-                                <span class="text-2xl font-bold ${index < 3 ? 'text-[#FBBC04]' : 'text-gray-500'}">#${index + 1}</span>
-                                <h2 class="text-xl font-semibold ${participant.accessStatus === 'Yes' ? 'text-gray-900' : 'text-[#EA4335]'}">${participant.name}</h2>
+                                <span class="text-2xl font-bold text-gray-500">#${participant.rank}</span>
+                                <h2 class="text-xl font-semibold ${participant.accessStatus.toLowerCase() === 'yes' ? 'text-gray-900' : 'text-[#EA4335]'}">${participant.name}</h2>
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="text-sm text-gray-600">Access Code:</span>
-                                <span class="font-medium ${participant.accessStatus === 'Yes' ? 'text-[#34A853]' : 'text-[#EA4335]'}">
-                                    ${participant.accessStatus === 'Yes' ? 'Redeemed ✅' : 'Not Redeemed ❌'}
+                                <span class="font-medium ${participant.accessStatus.toLowerCase() === 'yes' ? 'text-[#34A853]' : 'text-[#EA4335]'}">
+                                    ${participant.accessStatus.toLowerCase() === 'yes' ? 'Redeemed ✅' : 'Not Redeemed ❌'}
                                 </span>
                             </div>
                         </div>
@@ -235,8 +264,8 @@ function renderLeaderboard(filteredParticipants = participants) {
 
                     <!-- Right: Progress Bar -->
                     <div class="flex-shrink-0 self-stretch flex items-stretch">
-                        <div class="w-4 border-2 border-[#EA4333] bg-gray-100 rounded-full relative my-1">
-                            <div class="absolute bottom-0 left-0 right-0 bg-[#33AB52] rounded-full transition-all" 
+                        <div class="w-4 border-2 border-[#EA4335] bg-gray-100 rounded-full relative my-1">
+                            <div class="absolute bottom-0 left-0 right-0 bg-[#34A853] rounded-full transition-all" 
                                  style="height: ${((participant.totalBadges + participant.arcadeCount) / 20) * 100}%;"
                                  title="${participant.totalBadges + participant.arcadeCount}/20 items completed">
                             </div>
@@ -268,10 +297,10 @@ function handleFilters() {
             filtered = filtered.filter(p => p.totalBadges === 0 && p.arcadeCount === 0);
             break;
         case 'notRedeemed':
-            filtered = filtered.filter(p => p.accessStatus !== 'Yes');
+            filtered = filtered.filter(p => p.accessStatus.toLowerCase() !== 'yes');
             break;
         case 'redeemedNotStarted':
-            filtered = filtered.filter(p => p.accessStatus === 'Yes' && p.totalBadges === 0 && p.arcadeCount === 0);
+            filtered = filtered.filter(p => p.accessStatus.toLowerCase() === 'yes' && p.totalBadges === 0 && p.arcadeCount === 0);
             break;
     }
     
