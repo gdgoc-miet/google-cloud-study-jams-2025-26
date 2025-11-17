@@ -111,18 +111,12 @@ async function loadData() {
                 const userName = (row['User Name'] || '').trim();
                 const accessStatus = (row['Access Code Redemption Status'] || '').trim();
                 const csvCompletionStatus = (row['All Skill Badges & Games Completed'] || '').trim().toLowerCase() === 'yes';
-                const actuallyComplete = totalBadges === 19 && arcadeCount === 1;
-                
-                // Validate completion status consistency
-                if (csvCompletionStatus !== actuallyComplete && userName) {
-                    console.warn(`⚠️ Completion mismatch for ${userName}: CSV says ${csvCompletionStatus ? 'Yes' : 'No'}, but has ${totalBadges} badges + ${arcadeCount} arcade (expected 19+1)`);
-                }
                 
                 // Log completion details for debugging
                 if (csvCompletionStatus) {
-                    console.log(`Complete participant: ${userName}, Badges: ${totalBadges}, Arcade: ${arcadeCount}`);
+                    console.log(`✅ Complete participant: ${userName}, Badges: ${totalBadges}, Arcade: ${arcadeCount}`);
                 }
-                
+
                 return {
                     originalIndex: index,
                     name: userName,
@@ -131,7 +125,8 @@ async function loadData() {
                     badgeNames: (row['Names of Completed Skill Badges'] || '').split('|').filter(Boolean),
                     arcadeCount: arcadeCount,
                     arcadeNames: (row['Names of Completed Arcade Games'] || '').split('|').filter(Boolean),
-                    allCompleted: csvCompletionStatus // Use the CSV's completion status
+                    // Use CSV's completion status (trusted source)
+                    allCompleted: csvCompletionStatus
                 };
             })
             .filter(p => p.name); // Remove empty rows
@@ -165,7 +160,10 @@ async function loadData() {
 function updateFilterStats() {
     const totalParticipants = participants.length;
     const notRedeemed = participants.filter(p => p.accessStatus.toLowerCase() !== 'yes').length;
-    const completed = participants.filter(p => p.allCompleted).length;
+    const redeemed = participants.filter(p => p.accessStatus.toLowerCase() === 'yes').length;
+    const completed19Badges = participants.filter(p => p.totalBadges === 19).length;
+    const completedArcade = participants.filter(p => p.arcadeCount >= 1).length;
+    const completedBoth = participants.filter(p => p.allCompleted).length;
     // In progress means they have started but not completed everything
     const inProgress = participants.filter(p => 
         (p.totalBadges > 0 || p.arcadeCount > 0) && 
@@ -175,9 +173,10 @@ function updateFilterStats() {
     document.getElementById('filterStats').innerHTML = `
         <div class="flex flex-wrap gap-4 text-sm">
             <span>Total Participants: <b>${totalParticipants}</b></span>
-            <span>Not Redeemed: <b class="text-red-600">${notRedeemed}</b></span>
-            <span>In Progress: <b class="text-[#4285F4]">${inProgress}</b></span>
-            <span>Completed: <b class="text-green-600">${completed}</b></span>
+            <span>Redeemed: <b class="text-[#34A853]">${redeemed}</b></span>
+            <span>Completed 19 Badges: <b class="text-[#4285F4]">${completed19Badges}</b></span>
+            <span>Completed Arcade: <b class="text-[#FBBC04]">${completedArcade}</b></span>
+            <span>Completed Both (19+1): <b class="text-[#34A853]">${completedBoth}</b></span>
         </div>
     `;
 }
